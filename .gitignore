@@ -1,1 +1,4 @@
+/.venv27
 samples/
+*.pyc
+*.egg-info
