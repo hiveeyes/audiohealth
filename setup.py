@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 
 requires = [
     'docopt==0.6.2',
+    'scipy==0.19.0',
 ]
 
 extras = {
