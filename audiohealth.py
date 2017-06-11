@@ -114,4 +114,6 @@ def main():
         print(datfile)
         states = analyze(datfile, analyzer=analyzer)
         report(states)
+    else:
+        print("did you install sox?")
 
