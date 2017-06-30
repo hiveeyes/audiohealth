@@ -11,7 +11,7 @@ APP_NAME = 'audiohealth ' + VERSION
 
 def resample(audiofile):
     tmpfile = NamedTemporaryFile(suffix='.wav', delete=False)
-    command = 'sox "{input}" "{output}" remix 1,2 gain -n sinc 30-2250 rate 6300'.format(input=audiofile, output=tmpfile.name)
+    command = 'sox "{input}" "{output}" remix 1,2 gain -n sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name)
     print(command)
     cmd = shlex.split(command)
     print('cmd:', cmd)
@@ -35,9 +35,9 @@ def wav_to_dat(audiofile):
     snd.tofile(outfile, "\n")
 
     return outfile
- 
+
 def analyze(datfile, analyzer=None):
-    #program = 
+    #program =
     #print(sys.argv[0])
     cmd = [analyzer, datfile]
     print(cmd)
