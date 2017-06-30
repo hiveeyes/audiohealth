@@ -12,7 +12,7 @@ extras = {
 }
 
 setup(name='audiohealth',
-      version='0.1.0',
+      version='0.1.1',
       description='',
       long_description='',
       license="AGPL 3",
