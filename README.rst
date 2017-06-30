@@ -12,6 +12,12 @@ The promising output is simply the activity/health status of a bee colony! So fa
 `current work status thread in the OSBH Forum <https://community.akerkits.com/t/main-thread-current-work-status/326>`_.
 
 
+*******
+Details
+*******
+For more information, see also `Rate vitality of bee colony via analysing its sound <https://community.hiveeyes.org/t/rate-vitality-of-bee-colony-via-analysing-its-sound/357/6>`_.
+
+
 *****
 Setup
 *****
