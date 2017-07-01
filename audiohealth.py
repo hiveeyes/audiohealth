@@ -12,11 +12,11 @@ APP_NAME = 'audiohealth ' + VERSION
 def resample(audiofile):
     tmpfile = NamedTemporaryFile(suffix='.wav', delete=False)
     command = 'sox "{input}" "{output}" remix 1,2 gain -n sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name)
-    print(command)
+    #print(command)
     cmd = shlex.split(command)
-    print('cmd:', cmd)
+    #print('cmd:', cmd)
     status = subprocess.check_call(cmd)
-    print('status:', status)
+    #print('status:', status)
     #tmpfile.close()
     if status == 0:
       return tmpfile.name
@@ -25,7 +25,7 @@ def wav_to_dat(audiofile):
     sampFreq, snd = wav.read(audiofile)
 
     duration = snd.shape[0] / sampFreq
-    print("Duration:", duration)
+    print("Duration: {}s".format(duration))
 
     # Convert sound array to floating point values ranging from -1 to 1
     # http://samcarcagno.altervista.org/blog/basic-sound-processing-python/
@@ -40,7 +40,7 @@ def analyze(datfile, analyzer=None):
     #program =
     #print(sys.argv[0])
     cmd = [analyzer, datfile]
-    print(cmd)
+    #print(cmd)
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, stderr = process.communicate()
     #print(stdout)
@@ -69,6 +69,7 @@ def report(states):
             chronology.append(entry)
             current = state
 
+    print('Timeline:')
     for i, entry in enumerate(chronology):
         duration = None
         try:
@@ -81,7 +82,9 @@ def report(states):
             entry['duration_vis'] = int(duration / window_length) * "="
         line = '{time:3}s {state:15} {duration_vis}'.format(**entry)
         print(line)
+    print()
 
+    print('Aggregated:')
     print(aggregated)
 
 
@@ -111,7 +114,7 @@ def main():
     tmpfile = resample(inputfile)
     if tmpfile:
         datfile = wav_to_dat(tmpfile)
-        print(datfile)
+        #print(datfile)
         states = analyze(datfile, analyzer=analyzer)
         report(states)
     else:
