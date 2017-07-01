@@ -69,19 +69,16 @@ def report(states):
     current = None
     applied = False
     for i, state in enumerate(states):
-        #state = state.strip()
-        #if not state: continue
 
         aggregated.setdefault(state, 0)
         aggregated[state] += window_length
 
         applied = False
-        time = i * window_length
+        time_begin = i * window_length
+        time_end   = time_begin + window_length
         if state == current:
-            chronology[-1].update({'time_end': time})
+            chronology[-1].update({'time_end': time_end})
         else:
-            time_begin = time
-            time_end   = time_begin + window_length
             entry = {'time_begin': time_begin, 'time_end': time_end, 'state': state}
             chronology.append(entry)
             current = state
@@ -89,7 +86,7 @@ def report(states):
 
     # Properly handle the last state
     if not applied:
-        chronology[-1].update({'time_end': i * window_length})
+        chronology[-1].update({'time_end': time_end})
 
 
     print('==================')
@@ -170,7 +167,7 @@ def main():
       --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
       --datfile=<datfile>       Process datfile.
       --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
-      --strategy=<strategy>     The classification strategy. One of dt-0.90, dt-0.91, dt-1.0, dt-2.0, lr-2.0
+      --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0
       --keep                    Keep (don't delete) downsampled and .dat file
       --debug                   Enable debug messages
       -h --help                 Show this screen
