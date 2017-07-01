@@ -92,7 +92,7 @@ Help
           --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
           --datfile=<datfile>       Process datfile.
           --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
-          --strategy=<strategy>     The classification strategy. One of dt-0.90, dt-0.91, dt-1.0, dt-2.0, lr-2.0
+          --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0
           --keep                    Keep (don't delete) downsampled and .dat file
           --debug                   Enable debug messages
           -h --help                 Show this screen
