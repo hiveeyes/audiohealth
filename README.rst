@@ -105,7 +105,7 @@ classification strategies can be toggled to be able to compare results against e
 The cutting edge classification strategy is ``"lr-2.0"``, which is also the default setting.
 See also commit `Added new filters and logistic regression classifier <https://github.com/opensourcebeehives/MachineLearning-Local/commit/a40de504>`_. Aaron Makaruk describes it on 2017-07-01 like:
 
-> Our classifier has been recently updated to include two new states, and we've moved past decision-tree algorithms to something yielding greater results.
+    Our classifier has been recently updated to include two new states, and we've moved past decision-tree algorithms to something yielding greater results.
 
 
 
