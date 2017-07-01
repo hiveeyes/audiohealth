@@ -1,12 +1,18 @@
+# -*- coding: utf-8 -*-
+# (c) 2017 Richard Pobering <richard@hiveeyes.org>
+# (c) 2017 Andreas Motl <andreas@hiveeyes.org>
+import os
 import sys
 import shlex
 import subprocess
 from docopt import docopt
 from tempfile import NamedTemporaryFile
+from operator import itemgetter
+from colors import color
 import scipy.io.wavfile as wav
 
 
-VERSION  = '0.1.0'
+VERSION  = '0.2.0'
 APP_NAME = 'audiohealth ' + VERSION
 
 def resample(audiofile):
@@ -45,15 +51,19 @@ def analyze(datfile, analyzer=None):
     stdout, stderr = process.communicate()
     #print(stdout)
     states = stdout.decode('utf-8').split('\n')
-    #print(states)
     return states
 
 def report(states):
-    # see tools/osbh-audioanalyzer/params.h and main.cpp: DetectedStates.size()==5
+
+    # The audio is chunked into segments of 10 seconds each, see:
+    #   - tools/osbh-audioanalyzer/params.h: float windowLength=2; //Window Length in s
+    #   - tools/osbh-audioanalyzer/main.cpp: DetectedStates.size()==5
     window_length = 2 * 5
+
     chronology = []
     aggregated = {}
     current = None
+    applied = False
     for i, state in enumerate(states):
         state = state.strip()
         if not state: continue
@@ -61,43 +71,102 @@ def report(states):
         aggregated.setdefault(state, 0)
         aggregated[state] += window_length
 
-        if state != current:
-            time = (i + 1) * window_length
-            entry = {'time': time, 'state': state}
-            #line = '{time}s {state}'.format(time=time, state=state)
-            #print(line)
+        applied = False
+        time = i * window_length
+        if state == current:
+            chronology[-1].update({'time_end': time})
+        else:
+            time_begin = time
+            time_end   = time_begin + window_length
+            entry = {'time_begin': time_begin, 'time_end': time_end, 'state': state}
             chronology.append(entry)
             current = state
+            applied = True
 
-    print('Timeline:')
+    # Properly handle the last state
+    if not applied:
+        chronology[-1].update({'time_end': i * window_length})
+
+
+    print('==================')
+    print('Sequence of states')
+    print('==================')
+    print(', '.join(states))
+    print
+
+    print('===================')
+    print('Compressed timeline')
+    print('===================')
     for i, entry in enumerate(chronology):
         duration = None
         try:
-            duration = chronology[i+1]['time'] - chronology[i]['time']
+            #duration = chronology[i+1]['time'] - chronology[i]['time']
+            duration = entry['time_end'] - entry['time_begin']
         except IndexError:
             pass
         entry['duration'] = duration
         entry['duration_vis'] = None
         if duration:
             entry['duration_vis'] = int(duration / window_length) * "="
-        line = '{time:3}s {state:15} {duration_vis}'.format(**entry)
+
+        #line = '{time:3}t {state:15} {duration_vis}'.format(**entry)
+        line = '{time_begin:3}s - {time_end:3}s   {state:15} {duration_vis}'.format(**entry)
         print(line)
-    print()
+    print
 
-    print('Aggregated:')
-    print(aggregated)
+    print('==============')
+    print('Total duration')
+    print('==============')
+    aggregated_sorted = sorted(aggregated.items(), key=itemgetter(1), reverse=True)
+    for state, duration in aggregated_sorted:
+        duration_vis = int(duration / window_length) * "="
+        line = '{duration:10}s   {state:15} {duration_vis}'.format(**locals())
+        print(line)
+    print
 
+    print('======')
+    print('Result')
+    print('======')
+    print('The most common events (i.e. the events with the highest total duration) are:')
+    print
+
+    try:
+        winner_state, winner_duration = aggregated_sorted[0]
+        print('     The colony is mostly in »{state}« state, which is going on for {duration} seconds.'.format(state=emphasize(winner_state.upper()), duration=emphasize(winner_duration)))
+    except:
+        pass
+
+    try:
+        second_state, second_duration = aggregated_sorted[1]
+        print('     Sometimes, the state oscillates to »{state}«, for {duration} seconds in total.'.format(state=emphasize(second_state.upper()), duration=emphasize(second_duration)))
+    except:
+        pass
+
+    print
+
+    print('==========')
+    print('Disclaimer')
+    print('==========')
+    print('THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. NO LIABILITY FOR ANY DAMAGES WHATSOEVER.')
+
+    print
+
+def emphasize(text):
+    return color(text, fg='yellow', style='bold')
 
 def main():
     """
     Usage:
-      audiohealth --file audiofile --analyzer /path/to/osbh-audioanalyzer [--debug]
+      audiohealth --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--debug] [--keep]
+      audiohealth --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--debug]
       audiohealth --version
       audiohealth (-h | --help)
 
     Options:
-      --file=<audiofile>        Process audiofile. Please use sox-compatible input formats.
+      --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
+      --datfile=<datfile>       Process datfile.
       --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
+      --keep                    Keep (don't delete) downsampled and .dat file
       --debug                   Enable debug messages
       -h --help                 Show this screen
 
@@ -107,16 +176,27 @@ def main():
     options = docopt(main.__doc__, version=APP_NAME)
     #print options
 
-    inputfile = options.get('--file')
+    audiofile = options.get('--audiofile')
     analyzer = options.get('--analyzer')
     #print inputfile
 
-    tmpfile = resample(inputfile)
-    if tmpfile:
-        datfile = wav_to_dat(tmpfile)
-        #print(datfile)
-        states = analyze(datfile, analyzer=analyzer)
-        report(states)
-    else:
-        print("did you install sox?")
+    if audiofile:
+        tmpfile = resample(audiofile)
+        if not tmpfile:
+            print("Error whild downsampling: Did you install sox?")
+            sys.exit(2)
 
+        datfile = wav_to_dat(tmpfile)
+
+    else:
+        datfile = options.get('--datfile')
+
+    #print(datfile)
+    states = analyze(datfile, analyzer=analyzer)
+    report(states)
+
+    # Cleanup
+    if not options.get('--keep'):
+        if audiofile:
+            os.unlink(tmpfile)
+            os.unlink(datfile)

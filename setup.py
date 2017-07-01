@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 
 requires = [
     'docopt==0.6.2',
+    'ansicolors==1.1.8',
     'scipy',
     'numpy',
 ]
@@ -12,7 +13,7 @@ extras = {
 }
 
 setup(name='audiohealth',
-      version='0.1.1',
+      version='0.2.0',
       description='',
       long_description='',
       license="AGPL 3",
@@ -23,7 +24,6 @@ setup(name='audiohealth',
         "Environment :: Console",
         "Intended Audience :: Education",
         "Intended Audience :: Information Technology",
-        "Intended Audience :: Manufacturing",
         "Intended Audience :: Science/Research",
         "Topic :: Communications",
         "Topic :: Scientific/Engineering :: Information Analysis",
