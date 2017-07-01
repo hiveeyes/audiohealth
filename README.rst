@@ -100,10 +100,10 @@ Help
 
 Hint: By using ``--strategy dt-2.0`` or even ``--strategy dt-1.0``, different
 classification strategies can be toggled to be able to compare results against each other.
-``dt`` means "decision tree", while ``lr`` means "logistic regression".
+"``dt``" means "decision tree", while "``lr``" means "logistic regression".
 
-The cutting edge classification strategy is ``lr-2.0``, which is also the default setting,
-see also commit `Added new filters and logistic regression classifier <https://github.com/opensourcebeehives/MachineLearning-Local/commit/a40de504>`_.
+The cutting edge classification strategy is "``lr-2.0``", which is also the default setting.
+See also commit `Added new filters and logistic regression classifier <https://github.com/opensourcebeehives/MachineLearning-Local/commit/a40de504>`_.
 
 
 
