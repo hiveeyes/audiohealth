@@ -12,7 +12,7 @@ from colors import color
 import scipy.io.wavfile as wav
 
 
-VERSION  = '0.2.0'
+VERSION  = '0.3.0'
 APP_NAME = 'audiohealth ' + VERSION
 
 def resample(audiofile):
@@ -42,15 +42,19 @@ def wav_to_dat(audiofile):
 
     return outfile
 
-def analyze(datfile, analyzer=None):
-    #program =
-    #print(sys.argv[0])
-    cmd = [analyzer, datfile]
-    #print(cmd)
+def analyze(datfile, analyzer=None, strategy=None):
+    strategy = strategy or 'lr-2.0'
+
+    # Run command
+    cmd = [analyzer, datfile, strategy]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    #print(stdout)
     states = stdout.decode('utf-8').split('\n')
+
+    # Sanitize
+    states = [state.strip() for state in states]
+    states = [state for state in states if state]
+
     return states
 
 def report(states):
@@ -65,8 +69,8 @@ def report(states):
     current = None
     applied = False
     for i, state in enumerate(states):
-        state = state.strip()
-        if not state: continue
+        #state = state.strip()
+        #if not state: continue
 
         aggregated.setdefault(state, 0)
         aggregated[state] += window_length
@@ -157,8 +161,8 @@ def emphasize(text):
 def main():
     """
     Usage:
-      audiohealth --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--debug] [--keep]
-      audiohealth --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--debug]
+      audiohealth --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
+      audiohealth --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
       audiohealth --version
       audiohealth (-h | --help)
 
@@ -166,6 +170,7 @@ def main():
       --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
       --datfile=<datfile>       Process datfile.
       --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
+      --strategy=<strategy>     The classification strategy. One of dt-0.90, dt-0.91, dt-1.0, dt-2.0, lr-2.0
       --keep                    Keep (don't delete) downsampled and .dat file
       --debug                   Enable debug messages
       -h --help                 Show this screen
@@ -178,6 +183,7 @@ def main():
 
     audiofile = options.get('--audiofile')
     analyzer = options.get('--analyzer')
+    strategy = options.get('--strategy')
     #print inputfile
 
     if audiofile:
@@ -192,7 +198,7 @@ def main():
         datfile = options.get('--datfile')
 
     #print(datfile)
-    states = analyze(datfile, analyzer=analyzer)
+    states = analyze(datfile, analyzer=analyzer, strategy=strategy)
     report(states)
 
     # Cleanup

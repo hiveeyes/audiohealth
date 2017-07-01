@@ -24,9 +24,12 @@ For more information, see also `Rate vitality of bee colony via analysing its so
 *****
 Usage
 *****
-Synopsis::
 
-    audiohealth --audiofile ~/audio/samples/beehive_before_25_to_15.ogg --analyzer tools/osbh-audioanalyzer/bin/test
+Synopsis
+========
+::
+
+    audiohealth --audiofile ~/audio/samples/colony_before_swarming_25_to_15.ogg --analyzer tools/osbh-audioanalyzer/bin/test
 
 Output::
 
@@ -74,6 +77,31 @@ Output::
     THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. NO LIABILITY FOR ANY DAMAGES WHATSOEVER.
 
 
+Help
+====
+::
+
+    $ audiohealth --help
+        Usage:
+          audiohealth --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
+          audiohealth --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
+          audiohealth --version
+          audiohealth (-h | --help)
+
+        Options:
+          --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
+          --datfile=<datfile>       Process datfile.
+          --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
+          --strategy=<strategy>     The classification strategy. One of dt-0.90, dt-0.91, dt-1.0, dt-2.0, lr-2.0
+          --keep                    Keep (don't delete) downsampled and .dat file
+          --debug                   Enable debug messages
+          -h --help                 Show this screen
+
+
+Hint: By using ``--strategy dt-2.0`` or even ``--strategy dt-1.0``, different
+classification strategies can be toggled to be able to compare results against each other.
+
+
 *****
 Setup
 *****
@@ -93,7 +121,7 @@ We also recommend `youtube-dl <http://youtube-dl.org/>`_ for downloading audio s
 
 Install some distribution software packages::
 
-    apt install python-scipy python-numpy sox libsox-fmt-mp3 youtube-dl
+    apt install python-scipy python-numpy sox libsox-fmt-all youtube-dl
 
 Build the `osbh-audioanalyzer <https://github.com/hiveeyes/osbh-audioanalyzer>`_::
 

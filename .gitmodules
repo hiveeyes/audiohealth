@@ -1,4 +1,4 @@
 [submodule "tools/osbh-audioanalyzer"]
 	path = tools/osbh-audioanalyzer
 	url = https://github.com/hiveeyes/osbh-audioanalyzer.git
-    branch = logistic-regression-inputfile
+    branch = inputfile-strategy
