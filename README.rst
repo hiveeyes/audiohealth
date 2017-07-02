@@ -29,7 +29,7 @@ Synopsis
 ========
 ::
 
-    audiohealth --audiofile ~/audio/samples/colony_before_swarming_25_to_15.ogg --analyzer tools/osbh-audioanalyzer/bin/test
+    audiohealth analyze --audiofile ~/audio/samples/colony_before_swarming_25_to_15.ogg --analyzer tools/osbh-audioanalyzer/bin/test
 
 Output::
 
@@ -82,21 +82,25 @@ Help
 ::
 
     $ audiohealth --help
-        Usage:
-          audiohealth --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
-          audiohealth --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
-          audiohealth --version
-          audiohealth (-h | --help)
 
-        Options:
-          --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
-          --datfile=<datfile>       Process datfile.
-          --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
-          --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0
-          --keep                    Keep (don't delete) downsampled and .dat file
-          --debug                   Enable debug messages
-          -h --help                 Show this screen
+    Usage:
+      audiohealth analyze --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
+      audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
+      audiohealth convert --audiofile audiofile --wavfile wavfile
+      audiohealth power   --audiofile audiofile --pngfile pngfile
+      audiohealth --version
+      audiohealth (-h | --help)
 
+    Options:
+      --wavfile=<wavfile>       Output .wav file for conversion
+      --pngfile=<pngfile>       Output .png file of power spectrum
+      --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
+      --datfile=<datfile>       Process datfile.
+      --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
+      --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0
+      --keep                    Keep (don't delete) downsampled and .dat file
+      --debug                   Enable debug messages
+      -h --help                 Show this screen
 
 Hint: By using ``--strategy dt-2.0`` or even ``--strategy dt-1.0``, different
 classification strategies can be toggled to be able to compare results against each other.

@@ -4,28 +4,37 @@
 import os
 import sys
 import shlex
+import shutil
 import subprocess
 from docopt import docopt
 from tempfile import NamedTemporaryFile
 from operator import itemgetter
 from colors import color
+from scipy import signal
 import scipy.io.wavfile as wav
+try:
+    import matplotlib.pyplot as plt
+except:
+    pass
+import numpy as np
 
 
-VERSION  = '0.3.0'
+VERSION  = '0.4.0'
 APP_NAME = 'audiohealth ' + VERSION
 
 def resample(audiofile):
     tmpfile = NamedTemporaryFile(suffix='.wav', delete=False)
     command = 'sox "{input}" "{output}" remix 1,2 gain -n sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name)
-    #print(command)
     cmd = shlex.split(command)
-    #print('cmd:', cmd)
-    status = subprocess.check_call(cmd)
-    #print('status:', status)
-    #tmpfile.close()
-    if status == 0:
-      return tmpfile.name
+    try:
+        status = subprocess.check_call(cmd)
+        if status == 0:
+            return tmpfile.name
+    except:
+        print("Error while downsampling: Did you install sox?")
+        print("The command was:")
+        print(command)
+        raise
 
 def wav_to_dat(audiofile):
     sampFreq, snd = wav.read(audiofile)
@@ -45,10 +54,15 @@ def wav_to_dat(audiofile):
 def analyze(datfile, analyzer=None, strategy=None):
     strategy = strategy or 'lr-2.0'
 
-    # Run command
+    # Run "osbh-audioanalyzer" command
     cmd = [analyzer, datfile, strategy]
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, stderr = process.communicate()
+    if process.returncode != 0:
+        print
+        print('Error: osbh-audioanalyzer failed!')
+        sys.exit(process.returncode)
+
     states = stdout.decode('utf-8').split('\n')
 
     # Sanitize
@@ -85,7 +99,7 @@ def report(states):
             applied = True
 
     # Properly handle the last state
-    if not applied:
+    if chronology and not applied:
         chronology[-1].update({'time_end': time_end})
 
 
@@ -155,15 +169,93 @@ def report(states):
 def emphasize(text):
     return color(text, fg='yellow', style='bold')
 
+def power_spectrum(wavfile):
+
+    fs, x = wav.read(wavfile)
+
+    """
+    # https://docs.scipy.org/doc/scipy-0.19.0/reference/generated/scipy.signal.spectrogram.html
+    f, t, Sxx = signal.spectrogram(x, fs)
+    print(f, t, Sxx)
+    plt.pcolormesh(t, f, Sxx)
+    plt.ylabel('Frequency [Hz]')
+    plt.xlabel('Time [sec]')
+    plt.show()
+    return
+    """
+
+    # Compute power spectrum
+    # https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.welch.html
+    f, Pxx_spec = signal.welch(x, fs, 'flattop', 1024, scaling='spectrum')
+
+    # Compute peaks in power spectrum
+    peak_indices = signal.find_peaks_cwt(Pxx_spec, np.arange(5, 15))
+    peak_freq  = f[peak_indices]
+    peak_power = Pxx_spec[peak_indices]
+
+
+    # Plot power spectrum and peaks
+    #plt.rcParams.update({'font.size': 10})
+    plt.rc('xtick', labelsize=10)
+    plt.figure()
+
+    plt.xlim((30, 1500))
+    plt.ylim((10**2, 10**4))
+    plt.xticks(range(0, 1501, 100))
+
+    plt.xlabel('frequency [Hz]')
+    plt.ylabel('Linear spectrum [V RMS]')
+
+    # Plot power spectrum
+    plt.semilogy(f, np.sqrt(Pxx_spec))
+
+    # Plot peak points as dots
+    plt.semilogy(peak_freq, np.sqrt(peak_power), 'ro')
+
+
+    # Aggregate dictionary of peak frequencies mapping to their power
+    peak_data = dict(zip(peak_freq, peak_power))
+
+    # Filter < 1500 Hz
+    peak_data = {freq: power for freq, power in peak_data.iteritems() if freq <= 1500}
+
+    # Display power spectrum report
+    print('==================')
+    print('Peaks by frequency')
+    print('==================')
+    for freq, power in sorted(peak_data.items(), key=itemgetter(0)):
+        line = '{freq:15.2f} Hz   {power:15.2f} RMS'.format(**locals())
+        print(line)
+    print
+
+    print('==============')
+    print('Peaks by power')
+    print('==============')
+    for freq, power in sorted(peak_data.items(), key=itemgetter(1), reverse=True):
+        line = '{power:15.2f} RMS   {freq:15.2f} Hz'.format(**locals())
+        print(line)
+    print
+
+    tmpfile = NamedTemporaryFile(suffix='.png', delete=False)
+    plt.savefig(tmpfile.name)
+    #plt.show()
+
+    return tmpfile.name
+
+
 def main():
     """
     Usage:
-      audiohealth --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
-      audiohealth --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
+      audiohealth analyze --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
+      audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
+      audiohealth convert --audiofile audiofile --wavfile wavfile
+      audiohealth power   --audiofile audiofile --pngfile pngfile
       audiohealth --version
       audiohealth (-h | --help)
 
     Options:
+      --wavfile=<wavfile>       Output .wav file for conversion
+      --pngfile=<pngfile>       Output .png file of power spectrum
       --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
       --datfile=<datfile>       Process datfile.
       --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
@@ -176,30 +268,44 @@ def main():
 
     # Parse command line arguments
     options = docopt(main.__doc__, version=APP_NAME)
-    #print options
+    #print('options:', options)
 
-    audiofile = options.get('--audiofile')
-    analyzer = options.get('--analyzer')
-    strategy = options.get('--strategy')
-    #print inputfile
 
-    if audiofile:
-        tmpfile = resample(audiofile)
-        if not tmpfile:
-            print("Error whild downsampling: Did you install sox?")
-            sys.exit(2)
+    if options.get('convert'):
+        audiofile = options.get('--audiofile')
+        wavfile   = options.get('--wavfile')
+        tmpfile   = resample(audiofile)
+        shutil.move(tmpfile, wavfile)
 
-        datfile = wav_to_dat(tmpfile)
+    if options.get('power'):
+        audiofile = options.get('--audiofile')
+        pngfile   = options.get('--pngfile')
+        wavfile   = resample(audiofile)
+        tmpfile   = power_spectrum(wavfile)
+        os.unlink(wavfile)
+        shutil.move(tmpfile, pngfile)
 
-    else:
-        datfile = options.get('--datfile')
+    elif options.get('analyze'):
 
-    #print(datfile)
-    states = analyze(datfile, analyzer=analyzer, strategy=strategy)
-    report(states)
+        audiofile = options.get('--audiofile')
+        analyzer = options.get('--analyzer')
+        strategy = options.get('--strategy')
 
-    # Cleanup
-    if not options.get('--keep'):
         if audiofile:
-            os.unlink(tmpfile)
-            os.unlink(datfile)
+            tmpfile = resample(audiofile)
+            datfile = wav_to_dat(tmpfile)
+
+        else:
+            datfile = options.get('--datfile')
+
+        states = analyze(datfile, analyzer=analyzer, strategy=strategy)
+        report(states)
+
+        # Cleanup
+        if not options.get('--keep'):
+            if audiofile:
+                os.unlink(tmpfile)
+                os.unlink(datfile)
+
+if __name__ == '__main__':
+    main()
