@@ -250,6 +250,7 @@ def main():
       audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
       audiohealth convert --audiofile audiofile --wavfile wavfile
       audiohealth power   --audiofile audiofile --pngfile pngfile
+      audiohealth power   --wavfile wavfile     --pngfile pngfile
       audiohealth --version
       audiohealth (-h | --help)
 
@@ -279,10 +280,13 @@ def main():
 
     if options.get('power'):
         audiofile = options.get('--audiofile')
+        wavfile   = options.get('--wavfile')
         pngfile   = options.get('--pngfile')
-        wavfile   = resample(audiofile)
+        if audiofile:
+            wavfile   = resample(audiofile)
         tmpfile   = power_spectrum(wavfile)
-        os.unlink(wavfile)
+        if audiofile:
+            os.unlink(wavfile)
         shutil.move(tmpfile, pngfile)
 
     elif options.get('analyze'):
