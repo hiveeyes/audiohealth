@@ -24,7 +24,23 @@ APP_NAME = 'audiohealth ' + VERSION
 
 def resample(audiofile):
     tmpfile = NamedTemporaryFile(suffix='.wav', delete=False)
-    command = 'sox "{input}" "{output}" remix 1,2 gain -n sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name)
+
+    # Number of channels?
+    cmd = ['soxi', '-c', audiofile]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    remix_option = ''
+    if process.returncode == 0:
+        if stdout.strip() == '2':
+            remix_option = 'remix 1,2'
+    else:
+        print("Error while downsampling: Could not determine number of audio channels.")
+        print("The command was:")
+        print(cmd)
+        sys.exit(2)
+
+    command = 'sox "{input}" "{output}" --norm=-3 {remix_option} gain -n sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name, remix_option=remix_option)
     cmd = shlex.split(command)
     try:
         status = subprocess.check_call(cmd)
