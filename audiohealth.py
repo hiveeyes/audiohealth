@@ -205,7 +205,9 @@ def power_spectrum(wavfile):
     f, Pxx_spec = signal.welch(x, fs, 'flattop', 1024, scaling='spectrum')
 
     # Compute peaks in power spectrum
-    peak_indices = signal.find_peaks_cwt(Pxx_spec, np.arange(5, 15))
+    #peak_indices = signal.find_peaks_cwt(Pxx_spec, np.arange(3, 15), min_snr=0.1)
+    peak_indices = signal.argrelmax(Pxx_spec)
+    #peak_indices = signal.argrelextrema(Pxx_spec, np.greater)
     peak_freq  = f[peak_indices]
     peak_power = Pxx_spec[peak_indices]
 
