@@ -237,7 +237,7 @@ def power_spectrum(wavfile):
 
 
     # Aggregate dictionary of peak frequencies mapping to their power
-    peak_data = dict(zip(peak_freq, peak_power))
+    peak_data = dict(zip(peak_freq, np.sqrt(peak_power)))
 
     # Filter < 1500 Hz
     peak_data = {freq: power for freq, power in peak_data.iteritems() if freq <= 1500}
