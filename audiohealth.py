@@ -239,8 +239,8 @@ def power_spectrum(wavfile):
     # Aggregate dictionary of peak frequencies mapping to their power
     peak_data = dict(zip(peak_freq, np.sqrt(peak_power)))
 
-    # Filter < 1500 Hz
-    peak_data = {freq: power for freq, power in peak_data.iteritems() if freq <= 1500}
+    # Filter <= 1500 Hz and RMS >= 100
+    peak_data = {freq: power for freq, power in peak_data.iteritems() if freq <= 1500 and power >= 100}
 
     # Display power spectrum report
     print('==================')
@@ -258,6 +258,47 @@ def power_spectrum(wavfile):
         line = '{power:15.2f} RMS   {freq:15.2f} Hz'.format(**locals())
         print(line)
     print
+
+    # Compute ratio between energy at ~500Hz and ~250Hz
+    print('========')
+    print('Analysis')
+    print('========')
+    #i1: 445-525 / 220-275
+    band500 = {freq: power for freq, power in peak_data.iteritems() if 445 <= freq <= 525}
+    band250 = {freq: power for freq, power in peak_data.iteritems() if 220 <= freq <= 275}
+    freq500 = max(band500, key=peak_data.get)
+    freq250 = max(band250, key=peak_data.get)
+    power500 = peak_data[freq500]
+    power250 = peak_data[freq250]
+
+    if freq250:
+        text250 = 'Frequency at {freq} Hz has a power of {power} RMS'.format(freq=freq250, power=peak_data[freq250])
+        if power250 >= 1000:
+            status = color('Colony has high activity.', fg='green', style='bold')
+            reason = 'Reason: {text250}, which is >= 1000 RMS.'.format(text250=text250)
+            print(status),
+            print(reason)
+        else:
+            status = color('Colony has low activity.', fg='yellow', style='bold')
+            reason = 'Reason: {text250}, which is < 1000 RMS.'.format(text250=text250)
+            print(status),
+            print(reason)
+    else:
+            status = color('Colony has no activity.', fg='red', style='bold')
+            reason = 'Reason: There is no activity around 250Hz.'
+            print(status),
+            print(reason)
+
+    if freq500 and freq250:
+        #print(power500, power250)
+        ratio = float(power500) / float(power250)
+        if ratio >= 0.6:
+            status = color('Colony probably has no queen.', fg='red', style='bold')
+            reason = 'Reason: Ratio of powers at ~500Hz / ~250Hz is {ratio}, which is >= 0.6.'.format(ratio=ratio)
+            print(status),
+            print(reason)
+
+        print
 
     tmpfile = NamedTemporaryFile(suffix='.png', delete=False)
     plt.savefig(tmpfile.name)
