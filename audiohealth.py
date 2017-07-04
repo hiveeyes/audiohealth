@@ -218,17 +218,22 @@ def power_spectrum(wavfile):
     plt.figure()
 
     plt.xlim((30, 1500))
-    plt.ylim((10**2, 10**4))
+    #plt.ylim((10**2, 10**4))
+    #plt.ylim((10**2, 5000000))
+    plt.ylim((0, 2500))
+
     plt.xticks(range(0, 1501, 100))
 
     plt.xlabel('frequency [Hz]')
     plt.ylabel('Linear spectrum [V RMS]')
 
     # Plot power spectrum
-    plt.semilogy(f, np.sqrt(Pxx_spec))
+    #plt.semilogy(f, np.sqrt(Pxx_spec), 'b')
+    plt.plot(f, np.sqrt(Pxx_spec), 'b')
 
     # Plot peak points as dots
-    plt.semilogy(peak_freq, np.sqrt(peak_power), 'ro')
+    #plt.semilogy(peak_freq, np.sqrt(peak_power), 'ro')
+    plt.plot(peak_freq, np.sqrt(peak_power), 'ro')
 
 
     # Aggregate dictionary of peak frequencies mapping to their power
