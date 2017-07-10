@@ -40,7 +40,8 @@ def resample(audiofile):
         print(cmd)
         sys.exit(2)
 
-    command = 'sox "{input}" "{output}" --norm=-3 {remix_option} gain -n sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name, remix_option=remix_option)
+    command = 'sox "{input}" "{output}" {remix_option} norm -3 sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name, remix_option=remix_option)
+    #print(command)
     cmd = shlex.split(command)
     try:
         status = subprocess.check_call(cmd)
