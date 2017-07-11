@@ -69,7 +69,7 @@ def wav_to_dat(audiofile):
     return outfile
 
 def analyze(datfile, analyzer=None, strategy=None):
-    strategy = strategy or 'lr-2.0'
+    strategy = strategy or 'lr-2.1'
 
     # Run "osbh-audioanalyzer" command
     cmd = [analyzer, datfile, strategy]
@@ -311,8 +311,9 @@ def power_spectrum(wavfile):
 def main():
     """
     Usage:
-      audiohealth analyze --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
-      audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
+      audiohealth analyze --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug] [--keep]
+      audiohealth analyze --wavfile wavfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
+      audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
       audiohealth convert --audiofile audiofile --wavfile wavfile
       audiohealth power   --audiofile audiofile --pngfile pngfile
       audiohealth power   --wavfile wavfile     --pngfile pngfile
@@ -320,12 +321,12 @@ def main():
       audiohealth (-h | --help)
 
     Options:
-      --wavfile=<wavfile>       Output .wav file for conversion
+      --wavfile=<wavfile>       Name of .wav file
       --pngfile=<pngfile>       Output .png file of power spectrum
       --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
       --datfile=<datfile>       Process datfile.
       --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
-      --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0
+      --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0, lr-2.1
       --keep                    Keep (don't delete) downsampled and .dat file
       --debug                   Enable debug messages
       -h --help                 Show this screen
@@ -357,12 +358,19 @@ def main():
     elif options.get('analyze'):
 
         audiofile = options.get('--audiofile')
-        analyzer = options.get('--analyzer')
-        strategy = options.get('--strategy')
+        wavfile   = options.get('--wavfile')
+        datfile   = options.get('--datfile')
+        analyzer  = options.get('--analyzer')
+        strategy  = options.get('--strategy')
 
         if audiofile:
-            tmpfile = resample(audiofile)
-            datfile = wav_to_dat(tmpfile)
+            wavfile = resample(audiofile)
+            datfile = wav_to_dat(wavfile)
+            if not options.get('--keep'):
+                os.unlink(wavfile)
+
+        elif wavfile:
+            datfile = wav_to_dat(wavfile)
 
         else:
             datfile = options.get('--datfile')
@@ -372,8 +380,8 @@ def main():
 
         # Cleanup
         if not options.get('--keep'):
-            if audiofile:
-                os.unlink(tmpfile)
+            # Only delete datfile if not directly specified on command line
+            if audiofile or wavfile:
                 os.unlink(datfile)
 
 if __name__ == '__main__':
