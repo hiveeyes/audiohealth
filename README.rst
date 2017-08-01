@@ -71,11 +71,6 @@ Output::
          The colony is mostly in »PRE-SWARM« state, which is going on for 320 seconds.
          Sometimes, the state oscillates to »ACTIVE«, for 280 seconds in total.
 
-    ==========
-    Disclaimer
-    ==========
-    THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. NO LIABILITY FOR ANY DAMAGES WHATSOEVER.
-
 
 Help
 ====
@@ -84,20 +79,22 @@ Help
     $ audiohealth --help
 
     Usage:
-      audiohealth analyze --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug] [--keep]
-      audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.0] [--debug]
+      audiohealth analyze --audiofile audiofile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug] [--keep]
+      audiohealth analyze --wavfile wavfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
+      audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
       audiohealth convert --audiofile audiofile --wavfile wavfile
       audiohealth power   --audiofile audiofile --pngfile pngfile
+      audiohealth power   --wavfile wavfile     --pngfile pngfile
       audiohealth --version
       audiohealth (-h | --help)
 
     Options:
-      --wavfile=<wavfile>       Output .wav file for conversion
+      --wavfile=<wavfile>       Name of .wav file
       --pngfile=<pngfile>       Output .png file of power spectrum
       --audiofile=<audiofile>   Process audiofile. Please use sox-compatible input formats.
       --datfile=<datfile>       Process datfile.
       --analyzer=<analyzer>     Path to OSBH audioanalyzer binary
-      --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0
+      --strategy=<strategy>     The classification strategy. One of dt-0.9, dt-1.0, dt-2.0, lr-2.0, lr-2.1
       --keep                    Keep (don't delete) downsampled and .dat file
       --debug                   Enable debug messages
       -h --help                 Show this screen
