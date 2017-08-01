@@ -12,11 +12,11 @@ from operator import itemgetter
 from colors import color
 from scipy import signal
 import scipy.io.wavfile as wav
+import numpy as np
 try:
     import matplotlib.pyplot as plt
 except:
-    pass
-import numpy as np
+    print >>sys.stderr, 'WARNING: matplotlib not available. Will not be able to generate funny pictures.'
 
 
 VERSION  = '0.4.0'

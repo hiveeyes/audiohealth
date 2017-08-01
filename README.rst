@@ -127,9 +127,9 @@ Prerequisites
 To relieve your machine from compiling SciPy or NumPy, install the python libraries from your distribution. `audiohealth` furthermore relies on `sox <http://sox.sourceforge.net/Docs/Documentation>`_ for audio resampling.
 We also recommend `youtube-dl <http://youtube-dl.org/>`_ for downloading audio samples from Youtube.
 
-Install some distribution software packages::
+Install some distribution software packages (if you are not root, you might want to prefix the command with ``sudo``)::
 
-    apt install python-virtualenv python-scipy python-numpy sox libsox-fmt-all youtube-dl
+    apt install python-virtualenv python-scipy python-numpy sox libsox-fmt-all xvfb-run xauth youtube-dl
 
 Build the `osbh-audioanalyzer <https://github.com/hiveeyes/osbh-audioanalyzer>`_::
 
