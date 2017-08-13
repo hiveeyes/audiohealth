@@ -13,8 +13,10 @@ from colors import color
 from scipy import signal
 import scipy.io.wavfile as wav
 import numpy as np
+import aubio
 try:
     import matplotlib.pyplot as plt
+    import matplotlib.colors as colors
 except:
     print >>sys.stderr, 'WARNING: matplotlib not available. Will not be able to generate funny pictures.'
 
@@ -48,7 +50,6 @@ def resample(audiofile):
 
     # Normalize, apply bandpass filter and resample
     command = 'sox "{input}" "{output}" {remix_option} norm -3 sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name, remix_option=remix_option)
-    #print(command)
     cmd = shlex.split(command)
     try:
         status = subprocess.check_call(cmd)
@@ -199,6 +200,120 @@ def report(states):
 def emphasize(text):
     return color(text, fg='yellow', style='bold')
 
+
+# https://github.com/aubio/aubio/blob/master/python/demos/demo_spectrogram.py
+def spectrogram(audiofile, samplerate=0):
+    win_s = 512                                        # fft window size
+    hop_s = win_s // 2                                 # hop size
+    fft_s = win_s // 2 + 1                             # spectrum bins
+
+    audio_data = aubio.source(audiofile, samplerate, hop_s)  # source file
+    if samplerate == 0:
+        samplerate = audio_data.samplerate
+    pv = aubio.pvoc(win_s, hop_s)                            # phase vocoder
+    specgram = np.zeros([0, fft_s], dtype=aubio.float_type)     # numpy array to store spectrogram
+
+    # analysis
+    while True:
+        samples, read = audio_data()                     # read file
+        specgram = np.vstack((specgram,pv(samples).norm))   # store new norm vector
+        if read < audio_data.hop_size: break
+
+    # plotting
+    #fig = plt.imshow(log10(specgram.T + .001), origin = 'bottom', aspect = 'auto', cmap=plt.cm.gray_r)
+    #fig = plt.imshow(log10(specgram.T + .001), origin = 'bottom', aspect = 'auto', cmap=plt.cm.gray_r)
+
+    plt.figure(figsize=(15, 10))
+    fig = plt.imshow(np.log10(specgram.T + .001), origin = 'bottom', aspect = 'auto', cmap=plt.cm.gray_r)
+
+    #print dir(plt.cm)
+
+    #fig = plt.imshow(log10(specgram.T + .001), origin = 'bottom', size=800)
+    #plt.pcolormesh(t, f, Sxx)
+    #plt.pcolormesh(specgram.T)
+
+    #print dir(colors)
+
+    #norm = colors.LogNorm(vmin=specgram.T.min(), vmax=specgram.T.max())
+    #norm = colors.LogNorm(vmin=specgram.min(), vmax=specgram.max())
+
+    #norm = colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=specgram.min(), vmax=specgram.max())
+    norm = colors.SymLogNorm(linthresh=0.08, linscale=0.1, vmin=specgram.min(), vmax=specgram.max())
+
+    #bounds = np.linspace(-1, 1, 10)
+    #norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+
+    #norm = colors.PowerNorm(gamma=1./2.)
+    #norm = colors.PowerNorm(gamma=0.25)
+
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='PuBu_r')
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='PuBu_r')
+
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='RdBu_r')
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='RdBu')
+
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='gnuplot2')
+    plt.pcolormesh(specgram.T, norm=norm, cmap='inferno')
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='hot_r')
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='copper')
+    #plt.pcolormesh(specgram.T, norm=norm, cmap='seismic')
+
+    ax = fig.axes
+    ax.axis([0, len(specgram), 0, len(specgram[0])])
+
+    # show axes in Hz and seconds
+    time_step = hop_s / float(samplerate)
+    total_time = len(specgram) * time_step
+    outstr = "total time: %0.2fs" % total_time
+    print(outstr + ", samplerate: %.2fkHz" % (samplerate / 1000.0))
+    n_xticks = 10
+    n_yticks = 10
+
+    def get_rounded_ticks(top_pos, step, n_ticks):
+        top_label = top_pos * step
+        # get the first label
+        ticks_first_label = top_pos * step / n_ticks
+        # round to the closest .1
+        ticks_first_label = round(ticks_first_label * 10.0) / 10.0
+        # compute all labels from the first rounded one
+        ticks_labels = [ ticks_first_label * n for n in range(n_ticks) ] + [ top_label ]
+        # get the corresponding positions
+        ticks_positions = [ ticks_labels[n] / step for n in range(n_ticks) ] + [ top_pos ]
+        # convert to string
+        #ticks_labels = [  "%.1f" % x for x in ticks_labels ]
+        ticks_labels = [  "%i" % x for x in ticks_labels ]
+        # return position, label tuple to use with x/yticks
+        return ticks_positions, ticks_labels
+
+    # apply to the axis
+    x_ticks, x_labels = get_rounded_ticks(len(specgram), time_step, n_xticks)
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels(x_labels)
+
+    #y_ticks, y_labels = get_rounded_ticks(len(specgram[0]), (samplerate / 1000. / 2.) / len(specgram[0]), n_yticks)
+    y_ticks, y_labels = get_rounded_ticks(len(specgram[0]), (samplerate / 2.0) / len(specgram[0]), n_yticks)
+    #y_ticks, y_labels = get_rounded_ticks(len(specgram[0]), 1, n_yticks)
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels(y_labels)
+    #ax.set_yticks(range(0, 3150, 100))
+    #print len(specgram), len(specgram[0]), max(specgram[0])
+    #plt.yticks(range(0, 3151, 100))
+
+    ax.set_ylabel('Frequency (Hz)')
+    ax.set_xlabel('Time (s)')
+    ax.set_title(os.path.basename(audiofile))
+    for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+            ax.get_xticklabels() + ax.get_yticklabels()):
+        item.set_fontsize('x-small')
+
+    #return fig
+
+    tmpfile = NamedTemporaryFile(suffix='.png', delete=False)
+    plt.savefig(tmpfile.name)
+    #plt.show()
+
+    return tmpfile.name
+
 def power_spectrum(wavfile):
 
     fs, x = wav.read(wavfile)
@@ -328,6 +443,7 @@ def main():
       audiohealth analyze --wavfile wavfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
       audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
       audiohealth convert --audiofile audiofile --wavfile wavfile
+      audiohealth spectrogram --audiofile audiofile --pngfile pngfile
       audiohealth power   --audiofile audiofile --pngfile pngfile
       audiohealth power   --wavfile wavfile     --pngfile pngfile
       audiohealth --version
@@ -357,7 +473,13 @@ def main():
         tmpfile   = resample(audiofile)
         shutil.move(tmpfile, wavfile)
 
-    if options.get('power'):
+    if options.get('spectrogram'):
+        audiofile = options.get('--audiofile')
+        pngfile   = options.get('--pngfile')
+        tmpfile   = spectrogram(audiofile)
+        shutil.move(tmpfile, pngfile)
+
+    elif options.get('power'):
         audiofile = options.get('--audiofile')
         wavfile   = options.get('--wavfile')
         pngfile   = options.get('--pngfile')

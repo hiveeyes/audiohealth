@@ -8,6 +8,7 @@ requires = [
     'matplotlib',
     'scipy',
     'numpy',
+    'aubio==0.4.5',
 ]
 
 extras = {
