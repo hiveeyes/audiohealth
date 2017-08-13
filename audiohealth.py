@@ -26,20 +26,27 @@ def resample(audiofile):
     tmpfile = NamedTemporaryFile(suffix='.wav', delete=False)
 
     # Number of channels?
-    cmd = ['soxi', '-c', audiofile]
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    stdout, stderr = process.communicate()
+    try:
+        cmd = ['soxi', '-c', audiofile]
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+    except:
+        print("ERROR: Could not determine number of audio channels. Did you install sox?")
+        print("The command was:")
+        print(' '.join(cmd))
+        sys.exit(2)
 
     remix_option = ''
     if process.returncode == 0:
         if stdout.strip() == '2':
             remix_option = 'remix 1,2'
     else:
-        print("Error while downsampling: Could not determine number of audio channels.")
+        print('ERROR: Could not determine number of audio channels. The program "soxi" failed.')
         print("The command was:")
         print(cmd)
         sys.exit(2)
 
+    # Normalize, apply bandpass filter and resample
     command = 'sox "{input}" "{output}" {remix_option} norm -3 sinc 30-3150 rate 6300'.format(input=audiofile, output=tmpfile.name, remix_option=remix_option)
     #print(command)
     cmd = shlex.split(command)
@@ -48,10 +55,10 @@ def resample(audiofile):
         if status == 0:
             return tmpfile.name
     except:
-        print("Error while downsampling: Did you install sox?")
+        print("Error while downsampling. Did you install sox?")
         print("The command was:")
         print(command)
-        raise
+        sys.exit(2)
 
 def wav_to_dat(audiofile):
     sampFreq, snd = wav.read(audiofile)
@@ -73,11 +80,17 @@ def analyze(datfile, analyzer=None, strategy=None):
 
     # Run "osbh-audioanalyzer" command
     cmd = [analyzer, datfile, strategy]
+    if not os.path.exists(analyzer):
+        print
+        print('ERROR: Can not find osbh-audioanalyzer at path {}'.format(analyzer))
+        sys.exit(2)
+
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if process.returncode != 0:
         print
-        print('Error: osbh-audioanalyzer failed!')
+        print('ERROR: osbh-audioanalyzer failed')
+        print stderr
         sys.exit(process.returncode)
 
     states = stdout.decode('utf-8').split('\n')
