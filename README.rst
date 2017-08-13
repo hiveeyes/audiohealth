@@ -129,7 +129,7 @@ We also recommend `youtube-dl <http://youtube-dl.org/>`_ for downloading audio s
 
 Install some distribution software packages (if you are not root, you might want to prefix the command with ``sudo``)::
 
-    apt install python-virtualenv python-scipy python-numpy sox libsox-fmt-all xvfb-run xauth youtube-dl
+    apt install python-virtualenv python-scipy python-numpy sox libsox-fmt-all xvfb xauth youtube-dl
 
 Build the `osbh-audioanalyzer <https://github.com/hiveeyes/osbh-audioanalyzer>`_::
 
