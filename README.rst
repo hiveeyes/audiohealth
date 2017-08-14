@@ -83,6 +83,7 @@ Help
       audiohealth analyze --wavfile wavfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
       audiohealth analyze --datfile datfile --analyzer /path/to/osbh-audioanalyzer [--strategy lr-2.1] [--debug]
       audiohealth convert --audiofile audiofile --wavfile wavfile
+      audiohealth spectrogram --audiofile audiofile --pngfile pngfile
       audiohealth power   --audiofile audiofile --pngfile pngfile
       audiohealth power   --wavfile wavfile     --pngfile pngfile
       audiohealth --version
