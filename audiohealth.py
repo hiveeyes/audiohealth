@@ -370,6 +370,21 @@ def power_spectrum(wavfile):
     # Aggregate dictionary of peak frequencies mapping to their power
     peak_data = dict(zip(peak_freq, np.sqrt(peak_power)))
 
+    # Print peak report.
+    if peak_data:
+        power_spectrum_report(peak_data)
+    else:
+        print("WARNING: Unable to compute peak data")
+
+    tmpfile = NamedTemporaryFile(suffix='.png', delete=False)
+    plt.savefig(tmpfile.name)
+    #plt.show()
+
+    return tmpfile.name
+
+
+def power_spectrum_report(peak_data):
+
     # Filter <= 1500 Hz and RMS >= 100
     peak_data = {freq: power for freq, power in peak_data.items() if freq <= 1500 and power >= 100}
 
@@ -430,12 +445,6 @@ def power_spectrum(wavfile):
             print(reason)
 
         print()
-
-    tmpfile = NamedTemporaryFile(suffix='.png', delete=False)
-    plt.savefig(tmpfile.name)
-    #plt.show()
-
-    return tmpfile.name
 
 
 def main():
