@@ -21,7 +21,7 @@ except:
     print >>sys.stderr, 'WARNING: matplotlib not available. Will not be able to generate funny pictures.'
 
 
-VERSION  = '0.4.0'
+VERSION  = '0.5.0'
 APP_NAME = 'audiohealth ' + VERSION
 
 def resample(audiofile):
