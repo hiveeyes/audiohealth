@@ -317,6 +317,7 @@ def spectrogram(audiofile, samplerate=0):
 def power_spectrum(wavfile):
 
     fs, x = wav.read(wavfile)
+    x = np.swapaxes(x, 0, 1)
 
     """
     # https://docs.scipy.org/doc/scipy-0.19.0/reference/generated/scipy.signal.spectrogram.html
@@ -332,10 +333,11 @@ def power_spectrum(wavfile):
     # Compute power spectrum
     # https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.welch.html
     f, Pxx_spec = signal.welch(x, fs, 'flattop', 1024, scaling='spectrum')
+    Pxx_spec = Pxx_spec[0]
 
     # Compute peaks in power spectrum
     #peak_indices = signal.find_peaks_cwt(Pxx_spec, np.arange(3, 15), min_snr=0.1)
-    peak_indices = signal.argrelmax(Pxx_spec)
+    peak_indices = signal.argrelmax(Pxx_spec)[0]
     #peak_indices = signal.argrelextrema(Pxx_spec, np.greater)
     peak_freq  = f[peak_indices]
     peak_power = Pxx_spec[peak_indices]
