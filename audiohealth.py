@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # (c) 2017 Richard Pobering <richard@hiveeyes.org>
-# (c) 2017 Andreas Motl <andreas@hiveeyes.org>
+# (c) 2017-2021 Andreas Motl <andreas@hiveeyes.org>
 import os
 import sys
 import shlex
@@ -18,7 +18,7 @@ try:
     import matplotlib.pyplot as plt
     import matplotlib.colors as colors
 except:
-    print >>sys.stderr, 'WARNING: matplotlib not available. Will not be able to generate funny pictures.'
+    sys.stderr.write('WARNING: matplotlib not available. Will not be able to generate images.\n')
 
 
 VERSION  = '0.5.0'
@@ -82,16 +82,16 @@ def analyze(datfile, analyzer=None, strategy=None):
     # Run "osbh-audioanalyzer" command
     cmd = [analyzer, datfile, strategy]
     if not os.path.exists(analyzer):
-        print
+        print()
         print('ERROR: Can not find osbh-audioanalyzer at path {}'.format(analyzer))
         sys.exit(2)
 
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if process.returncode != 0:
-        print
+        print()
         print('ERROR: osbh-audioanalyzer failed')
-        print stderr
+        print(stderr)
         sys.exit(process.returncode)
 
     states = stdout.decode('utf-8').split('\n')
@@ -138,7 +138,7 @@ def report(states):
     print('Sequence of states')
     print('==================')
     print(', '.join(states))
-    print
+    print()
 
     print('===================')
     print('Compressed timeline')
@@ -158,7 +158,7 @@ def report(states):
         #line = '{time:3}t {state:15} {duration_vis}'.format(**entry)
         line = '{time_begin:3}s - {time_end:3}s   {state:15} {duration_vis}'.format(**entry)
         print(line)
-    print
+    print()
 
     print('==============')
     print('Total duration')
@@ -168,13 +168,13 @@ def report(states):
         duration_vis = int(duration / window_length) * "="
         line = '{duration:10}s   {state:15} {duration_vis}'.format(**locals())
         print(line)
-    print
+    print()
 
     print('======')
     print('Result')
     print('======')
     print('The most common events (i.e. the events with the highest total duration) are:')
-    print
+    print()
 
     try:
         winner_state, winner_duration = aggregated_sorted[0]
@@ -188,14 +188,14 @@ def report(states):
     except:
         pass
 
-    print
+    print()
 
     print('==========')
     print('Disclaimer')
     print('==========')
     print('THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. NO LIABILITY FOR ANY DAMAGES WHATSOEVER.')
 
-    print
+    print()
 
 def emphasize(text):
     return color(text, fg='yellow', style='bold')
@@ -226,13 +226,13 @@ def spectrogram(audiofile, samplerate=0):
     plt.figure(figsize=(15, 10))
     fig = plt.imshow(np.log10(specgram.T + .001), origin = 'bottom', aspect = 'auto', cmap=plt.cm.gray_r)
 
-    #print dir(plt.cm)
+    #print(dir(plt.cm))
 
     #fig = plt.imshow(log10(specgram.T + .001), origin = 'bottom', size=800)
     #plt.pcolormesh(t, f, Sxx)
     #plt.pcolormesh(specgram.T)
 
-    #print dir(colors)
+    #print(dir(colors))
 
     #norm = colors.LogNorm(vmin=specgram.T.min(), vmax=specgram.T.max())
     #norm = colors.LogNorm(vmin=specgram.min(), vmax=specgram.max())
@@ -369,7 +369,7 @@ def power_spectrum(wavfile):
     peak_data = dict(zip(peak_freq, np.sqrt(peak_power)))
 
     # Filter <= 1500 Hz and RMS >= 100
-    peak_data = {freq: power for freq, power in peak_data.iteritems() if freq <= 1500 and power >= 100}
+    peak_data = {freq: power for freq, power in peak_data.items() if freq <= 1500 and power >= 100}
 
     # Display power spectrum report
     print('==================')
@@ -378,7 +378,7 @@ def power_spectrum(wavfile):
     for freq, power in sorted(peak_data.items(), key=itemgetter(0)):
         line = '{freq:15.2f} Hz   {power:15.2f} RMS'.format(**locals())
         print(line)
-    print
+    print()
 
     print('==============')
     print('Peaks by power')
@@ -386,15 +386,15 @@ def power_spectrum(wavfile):
     for freq, power in sorted(peak_data.items(), key=itemgetter(1), reverse=True):
         line = '{power:15.2f} RMS   {freq:15.2f} Hz'.format(**locals())
         print(line)
-    print
+    print()
 
     # Compute ratio between energy at ~500Hz and ~250Hz
     print('========')
     print('Analysis')
     print('========')
     #i1: 445-525 / 220-275
-    band500 = {freq: power for freq, power in peak_data.iteritems() if 445 <= freq <= 525}
-    band250 = {freq: power for freq, power in peak_data.iteritems() if 220 <= freq <= 275}
+    band500 = {freq: power for freq, power in peak_data.items() if 445 <= freq <= 525}
+    band250 = {freq: power for freq, power in peak_data.items() if 220 <= freq <= 275}
     freq500 = max(band500, key=peak_data.get)
     freq250 = max(band250, key=peak_data.get)
     power500 = peak_data[freq500]
@@ -427,7 +427,7 @@ def power_spectrum(wavfile):
             print(status),
             print(reason)
 
-        print
+        print()
 
     tmpfile = NamedTemporaryFile(suffix='.png', delete=False)
     plt.savefig(tmpfile.name)
