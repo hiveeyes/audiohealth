@@ -134,18 +134,15 @@ Install some distribution software packages (if you are not root, you might want
 
 Build the `osbh-audioanalyzer <https://github.com/hiveeyes/osbh-audioanalyzer>`_::
 
-    cd tools/osbh-audioanalyzer/
-    ./build.sh
-    cd ../..
+    make setup-osbh-audio-analyzer
 
 
 Main program
 ============
 ::
 
-    virtualenv --system-site-packages .venv27
-    source .venv27/bin/activate
-    python setup.py develop
+    make setup-virtualenv
+    source .venv/bin/activate
 
 
 *******
