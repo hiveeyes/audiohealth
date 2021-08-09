@@ -224,7 +224,7 @@ def spectrogram(audiofile, samplerate=0):
     #fig = plt.imshow(log10(specgram.T + .001), origin = 'bottom', aspect = 'auto', cmap=plt.cm.gray_r)
 
     plt.figure(figsize=(15, 10))
-    fig = plt.imshow(np.log10(specgram.T + .001), origin = 'bottom', aspect = 'auto', cmap=plt.cm.gray_r)
+    fig = plt.imshow(np.log10(specgram.T + .001), origin = 'lower', aspect = 'auto', cmap=plt.cm.gray_r)
 
     #print(dir(plt.cm))
 
