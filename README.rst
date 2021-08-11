@@ -16,7 +16,7 @@ So far, the results are promising.
 *******
 Details
 *******
-We forked the "`OSBH machine learning <https://github.com/opensourcebeehives/MachineLearning-Local>`_" repository to `osbh-audioanalyzer <https://github.com/hiveeyes/osbh-audioanalyzer>`_ to make it able to obtain an input file option. The wrapper script resides in the [audiohealth] repository.
+We forked the "`OSBH machine learning <https://github.com/opensourcebeehives/MachineLearning-Local>`_" repository to `osbh-audioanalyzer <https://github.com/hiveeyes/osbh-audioanalyzer>`_ to make it able to obtain an input file option.
 
 For more information, see also `Rate vitality of bee colony via analysing its sound <https://community.hiveeyes.org/t/rate-vitality-of-bee-colony-via-analysing-its-sound/357/6>`_.
 
@@ -139,14 +139,41 @@ Build the `osbh-audioanalyzer <https://github.com/hiveeyes/osbh-audioanalyzer>`_
 
 Main program
 ============
+
 ::
 
     make setup-virtualenv
     source .venv/bin/activate
 
 
+********
+Examples
+********
+
+::
+
+    # Acquire example files.
+    wget https://community.hiveeyes.org/uploads/default/original/1X/6de56aed3b520166d92ce3194ff6a9e6852491b2.mp3 -O colony-with-queen-gruber.mp3
+    wget https://community.hiveeyes.org/uploads/default/original/1X/c751a4a83e8c1f5f0380eee2c7ee310b0967056a.mp3 -O colony-without-queen-gruber.mp3
+
+    # Convert to .wav files.
+    sox colony-with-queen-gruber.mp3 colony-with-queen-gruber.wav
+    sox colony-without-queen-gruber.mp3 colony-without-queen-gruber.wav
+
+    # Run OSBH audio analyzer
+    audiohealth analyze --audiofile=colony-with-queen-gruber.mp3 --analyzer=tools/osbh-audioanalyzer/bin/test
+    audiohealth analyze --audiofile=colony-without-queen-gruber.mp3 --analyzer=tools/osbh-audioanalyzer/bin/test
+
+    # Compute power spectrum and find peaks
+    audiohealth power --audiofile=colony-with-queen-gruber.wav --pngfile=power.png
+    open power.png
+
+    # Compute spectrogram
+    audiohealth spectrogram --audiofile=colony-with-queen-gruber.wav --pngfile=spectrogram.png
+    open spectrogram.png
+
+
 *******
 Credits
 *******
 The driving force behind the audio signal processing at OSBH is `Javier Andrés Calvo <https://github.com/Jabors>`_, so we want to send a big thank you to him and the whole OSBH team - this program is really standing on the shoulders of giants. Keep up the good work!
-

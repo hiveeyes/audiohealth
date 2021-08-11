@@ -1,5 +1,11 @@
 .idea
 .venv*
-samples/
+
 *.pyc
 *.egg-info
+
+samples/
+*.mp3
+*.wav
+*.dat
+*.png
