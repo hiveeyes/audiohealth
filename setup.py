@@ -3,8 +3,8 @@ import sys
 from setuptools import setup, find_packages
 
 requires = [
-    'docopt==0.6.2',
-    'ansicolors==1.1.8',
+    'docopt',
+    'ansicolors',
     'matplotlib',
     'scipy',
     'numpy',
