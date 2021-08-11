@@ -412,10 +412,14 @@ def power_spectrum_report(peak_data):
     #i1: 445-525 / 220-275
     band500 = {freq: power for freq, power in peak_data.items() if 445 <= freq <= 525}
     band250 = {freq: power for freq, power in peak_data.items() if 220 <= freq <= 275}
-    freq500 = max(band500, key=peak_data.get)
-    freq250 = max(band250, key=peak_data.get)
-    power500 = peak_data[freq500]
-    power250 = peak_data[freq250]
+    freq500 = None
+    freq250 = None
+    if band500:
+        freq500 = max(band500, key=peak_data.get)
+        power500 = peak_data[freq500]
+    if band250:
+        freq250 = max(band250, key=peak_data.get)
+        power250 = peak_data[freq250]
 
     if freq250:
         text250 = 'Frequency at {freq} Hz has a power of {power} RMS'.format(freq=freq250, power=peak_data[freq250])
